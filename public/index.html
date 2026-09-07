@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Codriver Radio — codriver app</title>
+<style>
+:root {
+  --bg: #0c0e11; --surface: #15191f; --fg: #edf1f6;
+  --muted: #929ca8; --faint: #697480; --line: rgba(255,255,255,.1);
+  --accent: #3d8bff; --fs: 13.5px;
+}
+:root[data-theme="light"] {
+  --bg: #f2f3f5; --surface: #fff; --fg: #14171c;
+  --muted: #59636e; --faint: #808a95; --line: rgba(0,0,0,.11);
+  --accent: #0052cc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  padding: calc(var(--fs) * .55); background: var(--bg); color: var(--fg);
+  font: 400 var(--fs)/1.15 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+}
+button { font: inherit; color: inherit; }
+.player { height: 100%; display: grid; grid-template-columns: min(31%, 6.9em) minmax(0, 1fr); gap: calc(var(--fs) * .7); }
+.cover-wrap { position: relative; min-width: 0; min-height: 0; background: var(--surface); }
+.cover { width: 100%; height: 100%; display: block; object-fit: cover; }
+.track-count {
+  position: absolute; left: .35em; bottom: .3em; padding: .18em .35em;
+  background: rgba(5,8,12,.78); color: #fff; font-size: .63em; letter-spacing: .08em;
+}
+.content { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.label { margin-top: .05em; color: var(--accent); font-size: .61em; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.title { margin-top: .16em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.17em; font-weight: 650; letter-spacing: -.018em; }
+.meta { margin-top: .22em; color: var(--muted); font-size: .69em; }
+.controls { display: flex; align-items: center; gap: .45em; border-top: 1px solid var(--line); padding-top: .38em; }
+.control {
+  width: 2.45em; height: 2.45em; border: 1px solid var(--line); background: var(--surface);
+  display: grid; place-items: center; border-radius: 2px; cursor: pointer;
+}
+.control:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.control svg { width: 1.1em; height: 1.1em; fill: currentColor; }
+.play { width: 3em; background: var(--accent); border-color: var(--accent); color: #fff; }
+.pause-icon, body[data-playing="true"] .play-icon { display: none; }
+body[data-playing="true"] .pause-icon { display: block; }
+.time { margin-left: auto; color: var(--faint); font-size: .64em; white-space: nowrap; }
+.status { color: var(--muted); font-size: .78em; align-self: center; }
+body[data-state="error"] .title, body[data-state="error"] .meta { display: none; }
+body:not([data-state="error"]) .status { display: none; }
+@media (max-width: 235px) {
+  .player { grid-template-columns: min(34%, 5.6em) minmax(0, 1fr); gap: .5em; }
+  .control { width: 2.25em; height: 2.25em; }
+  .play { width: 2.7em; }
+  .time { display: none; }
+}
+</style>
+</head>
+<body data-state="ready" data-playing="false">
+  <main class="player" aria-label="Codriver Radio">
+    <div class="cover-wrap">
+      <img class="cover" id="cover" src="assets/one-corner-ahead.jpg" alt="">
+      <span class="track-count" id="trackCount">1 / 2</span>
+    </div>
+    <section class="content">
+      <div>
+        <p class="label">Codriver radio</p>
+        <h1 class="title" id="title">One Corner Ahead</h1>
+        <p class="meta" id="meta">Codriver · 3:54</p>
+      </div>
+      <p class="status" id="status" role="status">Audio unavailable.</p>
+      <div class="controls">
+        <button class="control" id="previous" type="button" aria-label="Previous track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zm13 0v14L9 12z"></path></svg>
+        </button>
+        <button class="control play" id="play" type="button" aria-label="Play One Corner Ahead">
+          <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"></path></svg>
+          <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm7 0h4v14h-4z"></path></svg>
+        </button>
+        <button class="control" id="next" type="button" aria-label="Next track">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM5 5v14l10-7z"></path></svg>
+        </button>
+        <span class="time" id="time">0:00 / 3:54</span>
+      </div>
+    </section>
+  </main>
+  <audio id="audio" preload="metadata"></audio>
+<script>
+"use strict";
+var TRACKS = [
+  { title: "One Corner Ahead", duration: "3:54", src: "assets/one-corner-ahead.m4a", cover: "assets/one-corner-ahead.jpg" },
+  { title: "King of the Morning", duration: "3:55", src: "assets/king-of-the-morning.m4a", cover: "assets/king-of-the-morning.jpg" }
+];
+var audio = document.getElementById("audio");
+var el = {
+  cover: document.getElementById("cover"), count: document.getElementById("trackCount"),
+  title: document.getElementById("title"), meta: document.getElementById("meta"),
+  play: document.getElementById("play"), time: document.getElementById("time"),
+  status: document.getElementById("status")
+};
+var state = { track: 0, hostOrigin: null, lastSecond: -1 };
+
+function setUiSize(value) {
+  var level = typeof value === "number" && value >= 1 && value <= 10 ? value : 6;
+  document.documentElement.style.setProperty("--fs", (10.5 + level * .5).toFixed(2) + "px");
+}
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) return "0:00";
+  return Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
+}
+function renderTrack() {
+  var track = TRACKS[state.track];
+  el.cover.src = track.cover;
+  el.count.textContent = (state.track + 1) + " / " + TRACKS.length;
+  el.title.textContent = track.title;
+  el.meta.textContent = "Codriver · " + track.duration;
+  el.time.textContent = "0:00 / " + track.duration;
+  el.play.setAttribute("aria-label", "Play " + track.title);
+  document.body.setAttribute("data-state", "ready");
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.title, artist: "Codriver", album: "Codriver Radio",
+      artwork: [{ src: new URL(track.cover, location.href).href, sizes: "160x160", type: "image/jpeg" }]
+    });
+  }
+}
+function loadTrack(index, shouldPlay) {
+  state.track = (index + TRACKS.length) % TRACKS.length;
+  audio.src = TRACKS[state.track].src;
+  state.lastSecond = -1;
+  renderTrack();
+  if (shouldPlay) audio.play().catch(showAudioError);
+}
+function showAudioError() {
+  document.body.setAttribute("data-state", "error");
+  el.status.textContent = "Tap play when the car is parked.";
+}
+function togglePlay() {
+  if (audio.paused) audio.play().catch(showAudioError);
+  else audio.pause();
+}
+
+document.getElementById("previous").addEventListener("click", function () { loadTrack(state.track - 1, true); });
+document.getElementById("next").addEventListener("click", function () { loadTrack(state.track + 1, true); });
+el.play.addEventListener("click", togglePlay);
+audio.addEventListener("play", function () {
+  document.body.setAttribute("data-playing", "true");
+  el.play.setAttribute("aria-label", "Pause " + TRACKS[state.track].title);
+});
+audio.addEventListener("pause", function () {
+  document.body.setAttribute("data-playing", "false");
+  el.play.setAttribute("aria-label", "Play " + TRACKS[state.track].title);
+});
+audio.addEventListener("ended", function () { loadTrack(state.track + 1, true); });
+audio.addEventListener("timeupdate", function () {
+  var second = Math.floor(audio.currentTime);
+  if (second === state.lastSecond) return;
+  state.lastSecond = second;
+  el.time.textContent = formatTime(second) + " / " + TRACKS[state.track].duration;
+});
+audio.addEventListener("error", function () {
+  document.body.setAttribute("data-state", "error");
+  el.status.textContent = "Can't load this track.";
+});
+
+window.addEventListener("message", function (event) {
+  var data = event.data;
+  if (!data || data.codriver !== 1 || data.type !== "context") return;
+  if (state.hostOrigin === null) state.hostOrigin = event.origin;
+  else if (event.origin !== state.hostOrigin) return;
+  document.documentElement.setAttribute("data-theme", data.theme === "light" ? "light" : "dark");
+  setUiSize(data.uiSize);
+});
+
+if ("mediaSession" in navigator) {
+  navigator.mediaSession.setActionHandler("play", function () { audio.play(); });
+  navigator.mediaSession.setActionHandler("pause", function () { audio.pause(); });
+  navigator.mediaSession.setActionHandler("previoustrack", function () { loadTrack(state.track - 1, true); });
+  navigator.mediaSession.setActionHandler("nexttrack", function () { loadTrack(state.track + 1, true); });
+}
+loadTrack(0, false);
+try { window.parent.postMessage({ codriver: 1, type: "ready" }, "*"); } catch (error) {}
+</script>
+</body>
+</html>

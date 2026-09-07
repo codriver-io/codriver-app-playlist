@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Codriver Radio — widget harness</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px; display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; background: #16181d; color: #e9ecef; font: 14px/1.45 system-ui, sans-serif; }
+h1 { margin: 0 0 4px; font-size: 17px; }
+p { max-width: 44ch; color: #9aa2ad; }
+fieldset { width: 260px; margin: 16px 0 0; padding: 12px; border: 1px solid #343941; }
+legend, label { color: #9aa2ad; font-size: 11px; }
+label { display: block; margin-top: 8px; }
+select, input { width: 100%; margin-top: 3px; padding: 6px; background: #0c0e11; color: #fff; border: 1px solid #343941; }
+button { margin-top: 12px; padding: 8px 12px; border: 0; background: #3d8bff; color: #fff; font-weight: 650; }
+#slot { width: 300px; height: 130px; overflow: hidden; resize: both; border: 1px solid #454b54; }
+iframe { width: 100%; height: 100%; display: block; border: 0; }
+</style>
+</head>
+<body>
+  <section>
+    <h1>Codriver Radio</h1>
+    <p>This page sends the same presentation context as a Codriver widget slot.</p>
+    <fieldset>
+      <legend>Host context</legend>
+      <label>Theme<select id="theme"><option>dark</option><option>light</option></select></label>
+      <label>UI size (1–10)<input id="uiSize" type="number" min="1" max="10" value="6"></label>
+      <button id="send" type="button">Send context</button>
+    </fieldset>
+  </section>
+  <div id="slot"><iframe id="widget" src="./index.html" sandbox="allow-scripts allow-same-origin allow-forms"></iframe></div>
+<script>
+"use strict";
+var frame = document.getElementById("widget");
+var slot = document.getElementById("slot");
+function context() {
+  return { codriver: 1, type: "context", theme: document.getElementById("theme").value,
+    units: "metric", uiSize: Number(document.getElementById("uiSize").value) || 6,
+    slot: 1, size: { w: slot.clientWidth, h: slot.clientHeight }, device: "other", config: {} };
+}
+function send() { frame.contentWindow.postMessage(context(), "*"); }
+document.getElementById("send").addEventListener("click", send);
+document.getElementById("theme").addEventListener("change", send);
+document.getElementById("uiSize").addEventListener("change", send);
+frame.addEventListener("load", send);
+window.addEventListener("message", function (event) {
+  if (event.data && event.data.codriver === 1 && event.data.type === "ready") send();
+});
+if (window.ResizeObserver) new ResizeObserver(send).observe(slot);
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "codriver-app-playlist",
+  "private": true,
+  "description": "Original Codriver songs in a compact in-car widget",
+  "scripts": {
+    "serve": "python3 -m http.server 8794 -d public",
+    "deploy": "wrangler pages deploy public --project-name playlist-codriver --branch main --commit-dirty=true"
+  },
+  "devDependencies": { "wrangler": "^4.129.1" }
+}
