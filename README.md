@@ -9,7 +9,7 @@ The widget contains two original Codriver tracks:
 - One Corner Ahead
 - King of the Morning
 
-Browsers prohibit autoplay, so playback begins only after the driver taps play. Use audio controls only while parked.
+Browsers prohibit autoplay, so playback begins only after the driver taps the play button over the cover. A single `>> next` control switches tracks. Use audio controls only while parked.
 
 ## Run locally
 

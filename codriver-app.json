@@ -2,7 +2,7 @@
   "$comment": "Manifest for the codriver app marketplace.",
   "name": "Codriver Radio",
   "description": "Original Codriver songs in a compact player beside the map. Playback starts only when you tap play.",
-  "install_instructions": "Install Codriver Radio, assign it to a widget slot, then tap play while parked. Use the arrow buttons to switch between Codriver songs. The widget does not collect data or contact any service other than its own host.",
+  "install_instructions": "Install Codriver Radio, assign it to a widget slot, then tap the cover's play button while parked. Use >> next to switch songs. The widget does not collect data or contact any service other than its own host.",
   "integration_types": ["widget"],
   "widget_url": "https://playlist-codriver.pages.dev",
   "website_url": "https://playlist-codriver.pages.dev/dev.html",
