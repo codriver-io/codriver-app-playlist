@@ -66,7 +66,7 @@ body:not([data-state="error"]) .status { display: none; }
   <main class="player" aria-label="Codriver Radio">
     <div class="cover-wrap">
       <img class="cover" id="cover" src="assets/one-corner-ahead.jpg" alt="">
-      <span class="track-count" id="trackCount">1 / 2</span>
+      <span class="track-count" id="trackCount">1 / 4</span>
       <button class="play" id="play" type="button" aria-label="Play One Corner Ahead">
         <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"></path></svg>
         <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm7 0h4v14h-4z"></path></svg>
@@ -89,7 +89,9 @@ body:not([data-state="error"]) .status { display: none; }
 "use strict";
 var TRACKS = [
   { title: "One Corner Ahead", duration: "3:54", src: "assets/one-corner-ahead.m4a", cover: "assets/one-corner-ahead.jpg" },
-  { title: "King of the Morning", duration: "3:55", src: "assets/king-of-the-morning.m4a", cover: "assets/king-of-the-morning.jpg" }
+  { title: "King of the Morning", duration: "3:55", src: "assets/king-of-the-morning.m4a", cover: "assets/king-of-the-morning.jpg" },
+  { title: "Save Me a Plate", duration: "4:36", src: "assets/save-me-a-plate.m4a", cover: "assets/save-me-a-plate.jpg" },
+  { title: "Taylor is waiting", duration: "3:53", src: "assets/taylor-is-waiting.m4a", cover: "assets/taylor-is-waiting.jpg" }
 ];
 var audio = document.getElementById("audio");
 var el = {

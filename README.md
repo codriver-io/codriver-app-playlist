@@ -4,10 +4,12 @@ A compact music player built for a Codriver widget slot. It follows the iframe c
 
 ## Listen
 
-The widget contains two original Codriver tracks:
+The widget contains four original Codriver tracks:
 
 - One Corner Ahead
 - King of the Morning
+- Save Me a Plate
+- Taylor is waiting
 
 Browsers prohibit autoplay, so playback begins only after the driver taps the play button over the cover. A single `>> next` control switches tracks. Use audio controls only while parked.
 
